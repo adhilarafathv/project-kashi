@@ -1,0 +1,45 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Customer | Project KASHI</title>
+</head>
+<body>
+    <h1>Register a Customer</h1>
+
+    <form method="POST" action="/register">
+        <label>First name:</label>
+        <input type="text" name="first_name" required>
+        <br><br>
+
+        <label>Last name:</label>
+        <input type="text" name="last_name" required>
+        <br><br>
+
+        <label>Date of birth:</label>
+        <input type="date" name="dob" required>
+        <br><br>
+
+        <label>Mobile:</label>
+        <input type="tel" name="mobile" required>
+        <br><br>
+
+        <label>Email (optional):</label>
+        <input type="email" name="email">
+        <br><br>
+
+        <label>City (optional):</label>
+        <input type="text" name="city">
+        <br><br>
+
+        <button type="submit">Register Customer</button>
+    </form>
+
+    <p><a href="/">Home</a></p>
+    <p><a href="/customers">View Customers</a></p>
+</body>
+</html>
+
+

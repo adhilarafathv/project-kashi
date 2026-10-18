@@ -1,0 +1,54 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accounts | Project KASHI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <h1>Project KASHI — Accounts</h1>
+
+    <p><a href="{{ url_for('create_account') }}">Create Account</a></p>
+
+    {% if accounts %}
+        <table border="1" cellpadding="8">
+            <thead>
+                <tr>
+                    <th>Account ID</th>
+                    <th>Account Number</th>
+                    <th>Customer</th>
+                    <th>Type</th>
+                    <th>Branch</th>
+                    <th>Balance (₹)</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for account in accounts %}
+                    <tr>
+                        <td>{{ account.AccountID }}</td>
+                        <td>{{ account.AccountNumber }}</td>
+                        <td>{{ account.FirstName }} {{ account.LastName }}</td>
+                        <td>{{ account.AccountType }}</td>
+                        <td>{{ account.BranchName }}</td>
+                        <td>{{ "%.2f"|format(account.Balance) }}</td>
+                        <td>{{ account.Status }}</td>
+                        <td>
+                            <a href="{{ url_for('account_details', account_id=account.AccountID) }}">
+                                Open Account
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No accounts found.</p>
+    {% endif %}
+
+    <p><a href="{{ url_for('home') }}">Home</a></p>
+</body>
+</html>

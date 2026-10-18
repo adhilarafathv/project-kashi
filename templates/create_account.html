@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account | Project KASHI</title>
+</head>
+<body>
+    <h1>Create a Bank Account</h1>
+
+    {% if customers and branches %}
+    <form method="POST" action="/accounts/create">
+
+        <label>Customer:</label>
+        <select name="customer_id" required>
+            {% for customer in customers %}
+            <option value="{{ customer.CustomerID }}">
+                {{ customer.FirstName }} {{ customer.LastName }}
+                (ID: {{ customer.CustomerID }})
+            </option>
+            {% endfor %}
+        </select>
+        <br><br>
+
+        <label>Account type:</label>
+        <select name="account_type" required>
+            <option value="Saving">Saving</option>
+            <option value="Current">Current</option>
+            <option value="Salary">Salary</option>
+        </select>
+        <br><br>
+
+        <label>Branch:</label>
+        <select name="branch_id" required>
+            {% for branch in branches %}
+            <option value="{{ branch.BranchID }}">
+                {{ branch.BranchName }}
+                (ID: {{ branch.BranchID }})
+            </option>
+            {% endfor %}
+        </select>
+        <br><br>
+
+        <button type="submit">Create Account</button>
+    </form>
+    {% else %}
+    <p>You need at least one customer and one branch before creating an account.</p>
+    {% endif %}
+
+    <p><a href="/">Home</a></p>
+</body>
+</html>
