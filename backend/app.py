@@ -34,6 +34,7 @@ def load_account(cursor, account_id):
         WHERE a.AccountID = %s
         LIMIT 1
     """, (account_id,))
+
     return cursor.fetchone()
 
 
@@ -44,13 +45,19 @@ def render_account_page(cursor, account_id, error=None, success=None):
         return "Account not found.", 404
 
     cursor.execute("""
-        SELECT TransactionID, TransactionType, Amount,
-               TransactionDate, Description, ReferenceNumber,
-               TransactionStatus
+        SELECT
+            TransactionID,
+            TransactionType,
+            Amount,
+            TransactionDate,
+            Description,
+            ReferenceNumber,
+            TransactionStatus
         FROM BANK_TRANSACTION
         WHERE AccountID = %s
         ORDER BY TransactionDate DESC, TransactionID DESC
     """, (account_id,))
+
     transactions = cursor.fetchall()
 
     return render_template(
@@ -70,17 +77,24 @@ def home():
 @app.route("/customers")
 def customers():
     connection = get_db_connection()
+
     if connection is None:
         return "Database connection failed.", 500
 
     cursor = connection.cursor(dictionary=True)
+
     try:
         cursor.execute("""
             SELECT CustomerID, FirstName, LastName, Mobile, City
             FROM CUSTOMER
             ORDER BY CustomerID
         """)
-        return render_template("customers.html", customers=cursor.fetchall())
+
+        return render_template(
+            "customers.html",
+            customers=cursor.fetchall()
+        )
+
     finally:
         cursor.close()
         connection.close()
@@ -99,28 +113,37 @@ def register():
     city = request.form.get("city", "").strip() or None
 
     if not all([first_name, last_name, dob, mobile]):
-        return "First name, last name, date of birth and mobile are required.", 400
+        return (
+            "First name, last name, date of birth and mobile are required.",
+            400
+        )
 
     connection = get_db_connection()
+
     if connection is None:
         return "Database connection failed.", 500
 
     cursor = connection.cursor()
+
     try:
         cursor.execute("""
             INSERT INTO CUSTOMER
                 (FirstName, LastName, DateOfBirth, Mobile, Email, City)
             VALUES (%s, %s, %s, %s, %s, %s)
         """, (first_name, last_name, dob, mobile, email, city))
+
         connection.commit()
         return redirect(url_for("customers"))
+
     except Exception:
         connection.rollback()
+
         return (
             "Could not register customer. Check the form and ensure "
             "the mobile number and email are not already registered.",
             400
         )
+
     finally:
         cursor.close()
         connection.close()
@@ -129,20 +152,24 @@ def register():
 @app.route("/accounts/create", methods=["GET", "POST"])
 def create_account():
     connection = get_db_connection()
+
     if connection is None:
         return "Database connection failed.", 500
 
     cursor = connection.cursor(dictionary=True)
+
     try:
         cursor.execute("""
             SELECT CustomerID, FirstName, LastName
-            FROM CUSTOMER ORDER BY CustomerID
+            FROM CUSTOMER
+            ORDER BY CustomerID
         """)
         customer_list = cursor.fetchall()
 
         cursor.execute("""
             SELECT BranchID, BranchName
-            FROM BRANCH ORDER BY BranchID
+            FROM BRANCH
+            ORDER BY BranchID
         """)
         branch_list = cursor.fetchall()
 
@@ -160,10 +187,16 @@ def create_account():
         if account_type not in ACCOUNT_TYPES:
             return "Invalid account type.", 400
 
-        if not any(str(c["CustomerID"]) == customer_id for c in customer_list):
+        if not any(
+            str(customer["CustomerID"]) == customer_id
+            for customer in customer_list
+        ):
             return "Please select a valid customer.", 400
 
-        if not any(str(b["BranchID"]) == branch_id for b in branch_list):
+        if not any(
+            str(branch["BranchID"]) == branch_id
+            for branch in branch_list
+        ):
             return "Please select a valid branch.", 400
 
         # Generate a unique 12-digit account number.
@@ -171,10 +204,12 @@ def create_account():
             account_number = "".join(
                 secrets.choice(string.digits) for _ in range(12)
             )
+
             cursor.execute(
                 "SELECT AccountID FROM ACCOUNT WHERE AccountNumber = %s",
                 (account_number,)
             )
+
             if cursor.fetchone() is None:
                 break
 
@@ -194,15 +229,20 @@ def create_account():
         """, (customer_id, account_id))
 
         connection.commit()
-        return redirect(url_for("account_details", account_id=account_id))
+
+        return redirect(
+            url_for("account_details", account_id=account_id)
+        )
 
     except Exception:
         connection.rollback()
+
         return (
             "Could not create the account. Check the selected customer, "
             "branch and form values.",
             400
         )
+
     finally:
         cursor.close()
         connection.close()
@@ -211,23 +251,35 @@ def create_account():
 @app.route("/accounts")
 def accounts():
     connection = get_db_connection()
+
     if connection is None:
         return "Database connection failed.", 500
 
     cursor = connection.cursor(dictionary=True)
+
     try:
         cursor.execute("""
             SELECT
-                a.AccountID, a.AccountNumber, a.AccountType,
-                a.Balance, a.Status,
-                c.FirstName, c.LastName, b.BranchName
+                a.AccountID,
+                a.AccountNumber,
+                a.AccountType,
+                a.Balance,
+                a.Status,
+                c.FirstName,
+                c.LastName,
+                b.BranchName
             FROM ACCOUNT a
             JOIN ACCOUNT_HOLDER ah ON a.AccountID = ah.AccountID
             JOIN CUSTOMER c ON ah.CustomerID = c.CustomerID
             JOIN BRANCH b ON a.BranchID = b.BranchID
             ORDER BY a.AccountID
         """)
-        return render_template("accounts.html", accounts=cursor.fetchall())
+
+        return render_template(
+            "accounts.html",
+            accounts=cursor.fetchall()
+        )
+
     finally:
         cursor.close()
         connection.close()
@@ -236,6 +288,7 @@ def accounts():
 @app.route("/accounts/<int:account_id>", methods=["GET", "POST"])
 def account_details(account_id):
     connection = get_db_connection()
+
     if connection is None:
         return "Database connection failed.", 500
 
@@ -243,7 +296,15 @@ def account_details(account_id):
 
     if request.method == "GET":
         try:
-            return render_account_page(cursor, account_id)
+            # Read the confirmation message after a successful redirect.
+            success = request.args.get("success")
+
+            return render_account_page(
+                cursor,
+                account_id,
+                success=success
+            )
+
         finally:
             cursor.close()
             connection.close()
@@ -254,32 +315,44 @@ def account_details(account_id):
 
         if transaction_type not in {"DEPOSIT", "WITHDRAWAL"}:
             return render_account_page(
-                cursor, account_id, error="Invalid transaction type."
+                cursor,
+                account_id,
+                error="Invalid transaction type."
             ), 400
 
         try:
-            amount = Decimal(request.form.get("amount", "").strip())
+            amount_text = request.form.get("amount", "").strip()
+            amount = Decimal(amount_text)
+
             if not amount.is_finite() or amount <= 0:
                 raise InvalidOperation
+
             if amount.as_tuple().exponent < -2:
                 raise InvalidOperation
+
             amount = amount.quantize(Decimal("0.01"))
+
         except (InvalidOperation, ValueError, AttributeError):
             return render_account_page(
                 cursor,
                 account_id,
-                error="Enter a valid amount greater than zero, with at most two decimal places."
+                error=(
+                    "Enter a valid amount greater than zero, "
+                    "with at most two decimal places."
+                )
             ), 400
 
-        # Lock this account so simultaneous transactions cannot
-        # spend the same balance.
+        # Start a transaction and lock the account row.
+        # This protects the balance from concurrent updates.
         connection.start_transaction()
+
         cursor.execute("""
             SELECT Balance, Status
             FROM ACCOUNT
             WHERE AccountID = %s
             FOR UPDATE
         """, (account_id,))
+
         locked_account = cursor.fetchone()
 
         if locked_account is None:
@@ -288,8 +361,10 @@ def account_details(account_id):
 
         if locked_account["Status"] != "Active":
             connection.rollback()
+
             return render_account_page(
-                cursor, account_id,
+                cursor,
+                account_id,
                 error="Transactions are allowed only on Active accounts."
             ), 400
 
@@ -297,8 +372,10 @@ def account_details(account_id):
 
         if transaction_type == "WITHDRAWAL" and amount > current_balance:
             connection.rollback()
+
             return render_account_page(
-                cursor, account_id,
+                cursor,
+                account_id,
                 error="Insufficient balance. Withdrawal was not processed."
             ), 400
 
@@ -328,21 +405,33 @@ def account_details(account_id):
             reference_number
         ))
 
-        # Balance update and transaction record succeed together.
+        # Save the balance update and transaction record together.
         connection.commit()
 
-        return render_account_page(
-            cursor,
-            account_id,
-            success=f"{transaction_type.title()} successful. Reference: {reference_number}"
+        message = (
+            f"{transaction_type.title()} successful. "
+            f"Reference: {reference_number}"
+        )
+
+        # Redirect after POST so refreshing the page won't repeat
+        # the same deposit or withdrawal.
+        return redirect(
+            url_for(
+                "account_details",
+                account_id=account_id,
+                success=message
+            )
         )
 
     except Exception:
         connection.rollback()
+
         return render_account_page(
-            cursor, account_id,
+            cursor,
+            account_id,
             error="The transaction failed. No balance change was saved."
         ), 500
+
     finally:
         cursor.close()
         connection.close()

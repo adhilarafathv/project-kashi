@@ -5,49 +5,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Account | Project KASHI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <h1>Create a Bank Account</h1>
+    <main>
+        <h1>Project KASHI — Create Account</h1>
+        <p>Open a new bank account for a registered customer.</p>
 
-    {% if customers and branches %}
-    <form method="POST" action="/accounts/create">
+        {% if customers and branches %}
+            <form method="POST" action="{{ url_for('create_account') }}">
 
-        <label>Customer:</label>
-        <select name="customer_id" required>
-            {% for customer in customers %}
-            <option value="{{ customer.CustomerID }}">
-                {{ customer.FirstName }} {{ customer.LastName }}
-                (ID: {{ customer.CustomerID }})
-            </option>
-            {% endfor %}
-        </select>
-        <br><br>
+                <div>
+                    <label for="customer_id">Customer</label>
+                    <select id="customer_id" name="customer_id" required>
+                        {% for customer in customers %}
+                            <option value="{{ customer.CustomerID }}">
+                                {{ customer.FirstName }} {{ customer.LastName }}
+                                (ID: {{ customer.CustomerID }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-        <label>Account type:</label>
-        <select name="account_type" required>
-            <option value="Saving">Saving</option>
-            <option value="Current">Current</option>
-            <option value="Salary">Salary</option>
-        </select>
-        <br><br>
+                <br>
 
-        <label>Branch:</label>
-        <select name="branch_id" required>
-            {% for branch in branches %}
-            <option value="{{ branch.BranchID }}">
-                {{ branch.BranchName }}
-                (ID: {{ branch.BranchID }})
-            </option>
-            {% endfor %}
-        </select>
-        <br><br>
+                <div>
+                    <label for="account_type">Account Type</label>
+                    <select id="account_type" name="account_type" required>
+                        <option value="Saving">Savings</option>
+                        <option value="Current">Current</option>
+                        <option value="Salary">Salary</option>
+                    </select>
+                </div>
 
-        <button type="submit">Create Account</button>
-    </form>
-    {% else %}
-    <p>You need at least one customer and one branch before creating an account.</p>
-    {% endif %}
+                <br>
 
-    <p><a href="/">Home</a></p>
+                <div>
+                    <label for="branch_id">Branch</label>
+                    <select id="branch_id" name="branch_id" required>
+                        {% for branch in branches %}
+                            <option value="{{ branch.BranchID }}">
+                                {{ branch.BranchName }}
+                                (ID: {{ branch.BranchID }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <br>
+
+                <button type="submit">Create Account</button>
+            </form>
+        {% else %}
+            <p role="alert">
+                You need at least one registered customer and one branch
+                before creating an account.
+            </p>
+        {% endif %}
+
+        <nav>
+            <p><a href="{{ url_for('accounts') }}">Back to Accounts</a></p>
+            <p><a href="{{ url_for('home') }}">Home</a></p>
+        </nav>
+    </main>
 </body>
 </html>

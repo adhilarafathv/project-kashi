@@ -3,13 +3,59 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Project KASHI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Project KASHI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <h1>Welcome to KASHI BANK</h1>
-    <p>Your Flask frontend is working!</p>
-    <p>
-    <a href="/customers">View Customers</a>
-    </p>
+    <main class="dashboard">
+        <header class="dashboard-header">
+            <div>
+                <p class="eyebrow">BANKING MANAGEMENT SYSTEM</p>
+                <h1>Welcome to KASHI BANK</h1>
+                <p>Manage customers, accounts, and banking transactions in one place.</p>
+            </div>
+        </header>
+
+        <section class="dashboard-intro">
+            <h2>Banking Dashboard</h2>
+            <p>Select a section to get started.</p>
+        </section>
+
+        <section class="dashboard-grid">
+            <article class="dashboard-card">
+                <h3>Customers</h3>
+                <p>View registered customers and add new customer records.</p>
+                <a class="button" href="{{ url_for('customers') }}">View Customers</a>
+                <a class="text-link" href="{{ url_for('register') }}">Register Customer →</a>
+            </article>
+
+            <article class="dashboard-card">
+                <h3>Accounts</h3>
+                <p>Review bank accounts, account types, balances, and statuses.</p>
+                <a class="button" href="{{ url_for('accounts') }}">Manage Accounts</a>
+                <a class="text-link" href="{{ url_for('create_account') }}">Create Account →</a>
+            </article>
+
+            <article class="dashboard-card">
+                <h3>Transactions</h3>
+                <p>Process deposits and withdrawals and review transaction history.</p>
+                <a class="button" href="{{ url_for('accounts') }}">Manage Transactions</a>
+            </article>
+        </section>
+
+        <section class="dashboard-note">
+            <h2>Project Overview</h2>
+            <p>
+                KASHI is an educational banking application built using Flask and MySQL.
+                It demonstrates customer management, account handling, transaction
+                processing, and database operations.
+            </p>
+        </section>
+
+        <footer>
+            <p>Project KASHI · Banking Management System</p>
+        </footer>
+    </main>
 </body>
 </html>
